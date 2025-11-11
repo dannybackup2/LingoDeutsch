@@ -3,7 +3,7 @@ import { FlashcardDeck } from '../types';
 export const flashcardDecks: FlashcardDeck[] = [
   {
     id: 'basics-1',
-    title: 'Basic Greetings',
+    title: 'Unit 1: Basic Greetings',
     category: 'basics',
     cards: [
       {
@@ -52,7 +52,7 @@ export const flashcardDecks: FlashcardDeck[] = [
   },
   {
     id: 'basics-2',
-    title: 'Common Questions',
+    title: 'Unit 2: Common Questions',
     category: 'basics',
     cards: [
       {
@@ -94,7 +94,7 @@ export const flashcardDecks: FlashcardDeck[] = [
   },
   {
     id: 'vocab-1',
-    title: 'Animals',
+    title: 'Unit 3: Animals',
     category: 'vocabulary',
     cards: [
       {
@@ -143,7 +143,7 @@ export const flashcardDecks: FlashcardDeck[] = [
   },
   {
     id: 'phrases-1',
-    title: 'Useful Phrases',
+    title: 'Unit 4: Useful Phrases',
     category: 'phrases',
     cards: [
       {

@@ -3,7 +3,7 @@ import { Lesson } from '../types';
 export const lessons: Lesson[] = [
   {
     id: '1',
-    title: 'Greetings and Introductions',
+    title: 'Unit 1: Greetings and Introductions',
     category: 'basics',
     level: 'beginner',
     description: 'Learn basic German greetings and how to introduce yourself.',
@@ -40,7 +40,7 @@ B: Nett, dich auch kennenzulernen!
   },
   {
     id: '2',
-    title: 'Numbers 1-20',
+    title: 'Unit 2: Numbers 1-20',
     category: 'basics',
     level: 'beginner',
     description: 'Learn to count from one to twenty in German.',
@@ -78,7 +78,7 @@ B: Nett, dich auch kennenzulernen!
   },
   {
     id: '3',
-    title: 'Present Tense Verbs',
+    title: 'Unit 3: Present Tense Verbs',
     category: 'grammar',
     level: 'beginner',
     description: 'Learn how to conjugate regular verbs in the present tense.',
@@ -115,7 +115,7 @@ In German, verbs change their form depending on the subject. Here's the pattern 
   },
   {
     id: '4',
-    title: 'Common Phrases for Travelers',
+    title: 'Unit 4: Common Phrases for Travelers',
     category: 'phrases',
     level: 'beginner',
     description: 'Essential German phrases for traveling in German-speaking countries.',
@@ -153,7 +153,7 @@ In German, verbs change their form depending on the subject. Here's the pattern 
   },
   {
     id: '5',
-    title: 'Food Vocabulary',
+    title: 'Unit 5: Food Vocabulary',
     category: 'vocabulary',
     level: 'beginner',
     description: 'Learn common German words for food and drinks.',
@@ -203,7 +203,7 @@ In German, verbs change their form depending on the subject. Here's the pattern 
   },
   {
     id: '6',
-    title: 'German Cases',
+    title: 'Unit 6: German Cases',
     category: 'grammar',
     level: 'intermediate',
     description: 'Introduction to the four German cases and their usage.',
