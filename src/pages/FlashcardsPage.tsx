@@ -1,19 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { flashcardDecks } from '../data/flashcards';
 import { useNavigate } from 'react-router-dom';
 import { Filter, LayersIcon } from 'lucide-react';
+import { FlashcardDeck } from '../types';
+import { listFlashcardDecks } from '../services/data';
 
 const FlashcardsPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  
+  const [decks, setDecks] = useState<FlashcardDeck[]>([]);
+
+  useEffect(() => {
+    listFlashcardDecks().then(setDecks).catch(() => setDecks([]));
+  }, []);
+
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCategory(e.target.value);
   };
-  
-  const filteredDecks = selectedCategory 
-    ? flashcardDecks.filter(deck => deck.category === selectedCategory)
-    : flashcardDecks;
+
+  const filteredDecks = selectedCategory
+    ? decks.filter(deck => deck.category === selectedCategory)
+    : decks;
 
   const categoryColors = {
     basics: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 border-blue-200 dark:border-blue-800',
