@@ -47,9 +47,16 @@ CREATE TABLE IF NOT EXISTS __migrations (
 );
 `;
 
-async function bootstrap(env: Env) {
-  const db = env.DB;
+let initialized = false;
 
+async function bootstrap(env: Env) {
+  if (initialized) return; // ✅ 跳过重复执行
+  initialized = true;
+
+  const db = env.DB;
+  const seeded = await db.prepare('SELECT value FROM __migrations WHERE key = ?').bind('seeded_v1').first<{ value: string }>();
+  if (seeded) return;
+  
   const ddls = createTablesSQL
     .split(';')
     .map(s => s.trim())
@@ -58,9 +65,6 @@ async function bootstrap(env: Env) {
   for (const sql of ddls) {
     await db.prepare(sql).run();
   }
-
-  const seeded = await db.prepare('SELECT value FROM __migrations WHERE key = ?').bind('seeded_v1').first<{ value: string }>();
-  if (seeded) return;
 
   const insertLesson = db.prepare(
     'INSERT OR IGNORE INTO lessons (id, title, category, level, description, content, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?)'
