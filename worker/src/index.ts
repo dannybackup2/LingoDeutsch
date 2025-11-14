@@ -101,11 +101,61 @@ function corsHeaders() {
   };
 }
 
-// ✅ JSON 响应统一带 CORS
-function json(data: unknown, init?: ResponseInit) {
-  return new Response(JSON.stringify(data), {
+// ✅ 生成 ETag (简单的字符串哈希)
+function generateETag(data: string): string {
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    const char = data.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // 转换为 32 位整数
+  }
+  return `"${Math.abs(hash).toString(16)}"`;
+}
+
+// ✅ 获取合理的 cache max-age（根据端点类型）
+function getCacheMaxAge(path: string): number {
+  if (path === '/daily-word') return 600; // 10 分钟，动态内容
+  if (path === '/daily-words') return 3600; // 1 小时
+  if (path.includes('/lessons') || path.includes('/flashcards')) return 86400; // 24 小时，静态内容
+  return 3600; // 默认 1 小时
+}
+
+// ✅ 检查 ETag 缓存验证
+function checkETag(req: Request, data: string): string | null {
+  const eTag = generateETag(data);
+  const ifNoneMatch = req.headers.get('if-none-match');
+
+  if (ifNoneMatch === eTag) {
+    return null; // 返回 null 表示需要 304 响应
+  }
+
+  return eTag;
+}
+
+// ✅ JSON 响应统一带 CORS 和 Cache-Control
+function json(data: unknown, init?: ResponseInit, path?: string) {
+  const dataStr = JSON.stringify(data);
+  const eTag = checkETag(globalThis as any, dataStr);
+
+  const maxAge = path ? getCacheMaxAge(path) : 3600;
+  const cacheControl = `public, max-age=${maxAge}`;
+
+  // 如果 ETag 匹配，返回 304
+  if (eTag === null) {
+    return new Response(null, {
+      status: 304,
+      headers: {
+        'cache-control': cacheControl,
+        ...corsHeaders(),
+      },
+    });
+  }
+
+  return new Response(dataStr, {
     headers: {
       'content-type': 'application/json; charset=utf-8',
+      'cache-control': cacheControl,
+      'etag': eTag,
       ...corsHeaders(),
       ...(init?.headers || {}),
     },
