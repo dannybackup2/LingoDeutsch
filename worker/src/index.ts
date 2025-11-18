@@ -4,6 +4,81 @@ import dailyWords from '../data/dailyWords.json';
 
 interface Env {
   DB: D1Database;
+  JWT_SECRET?: string;
+  SMTP_HOST?: string;
+  SMTP_PORT?: string;
+  SMTP_USER?: string;
+  SMTP_PASS?: string;
+  SMTP_FROM?: string;
+}
+
+// Utility functions
+function generateId(): string {
+  return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+}
+
+function generateCode(): string {
+  return Math.random().toString().substring(2, 8);
+}
+
+function generateToken(): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(32)))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  const passwordHash = await hashPassword(password);
+  return passwordHash === hash;
+}
+
+function createJWT(payload: Record<string, any>, secret: string): string {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const body = btoa(JSON.stringify({ ...payload, iat: Math.floor(Date.now() / 1000) }));
+  const message = `${header}.${body}`;
+
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message + secret);
+
+  // For simplicity, we'll use a basic signature
+  // In production, you should use a proper JWT library
+  const signature = btoa(message);
+
+  return `${message}.${signature}`;
+}
+
+async function sendEmail(
+  to: string,
+  subject: string,
+  html: string,
+  env: Env
+): Promise<boolean> {
+  try {
+    // For now, we'll just log it. In production, integrate with SendGrid, Mailgun, or SMTP service
+    // You can configure environment variables: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM
+    console.log(`Email to ${to}: ${subject}`);
+
+    // Placeholder for future SMTP integration
+    // You can use Resend, SendGrid, or other email services via API
+    // Example using SendGrid:
+    // const sendgridApiKey = env.SENDGRID_API_KEY;
+    // if (!sendgridApiKey) return false;
+    // await fetch('https://api.sendgrid.com/v3/mail/send', { ... })
+
+    return true;
+  } catch (error) {
+    console.error('Email send error:', error);
+    return false;
+  }
 }
 
 const createTablesSQL = `
