@@ -308,6 +308,60 @@ export default {
         );
       }
 
+      // POST /auth/resend-verification-email
+      if (req.method === 'POST' && path === '/auth/resend-verification-email') {
+        const body = await req.json<{ email: string }>();
+        const { email } = body;
+
+        if (!email) {
+          return json({ error: 'Email is required' }, req, path, { status: 400 });
+        }
+
+        const user = await env.DB.prepare('SELECT id, email, email_verified FROM users WHERE email = ?').bind(email).first<any>();
+
+        if (!user) {
+          return json({ error: 'User not found' }, req, path, { status: 404 });
+        }
+
+        if (user.email_verified) {
+          return json({ error: 'Email is already verified' }, req, path, { status: 400 });
+        }
+
+        // Delete old verification tokens
+        await env.DB.prepare('DELETE FROM email_verification_tokens WHERE user_id = ?').bind(user.id).run();
+
+        // Generate new verification token and code
+        const verificationId = generateId();
+        const code = generateCode();
+        const token = generateToken();
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        const createdAt = new Date().toISOString();
+
+        await env.DB.prepare(
+          'INSERT INTO email_verification_tokens (id, user_id, token, code, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+        ).bind(verificationId, user.id, token, code, expiresAt, createdAt).run();
+
+        // Send verification email
+        const html = `
+          <h2>Welcome to LingoDeutsch!</h2>
+          <p>Your verification code is: <strong>${code}</strong></p>
+          <p>This code will expire in 24 hours.</p>
+          <p>Please enter this code on the verification page to complete your registration.</p>
+        `;
+
+        await sendEmail(email, 'Email Verification - LingoDeutsch', html, env);
+
+        return json(
+          {
+            success: true,
+            message: 'Verification email sent successfully',
+            userId: user.id,
+          },
+          req,
+          path
+        );
+      }
+
       // POST /auth/login
       if (req.method === 'POST' && path === '/auth/login') {
         const body = await req.json<{ email: string; password: string }>();
