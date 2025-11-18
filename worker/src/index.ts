@@ -4,11 +4,6 @@ import dailyWords from '../data/dailyWords.json';
 
 interface Env {
   DB: D1Database;
-  JWT_SECRET?: string;
-  SMTP_FROM?: string;
-  SENDGRID_API_KEY?: string;
-  MAILGUN_API_KEY?: string;
-  MAILGUN_DOMAIN?: string;
   RESEND_API_KEY?: string;
 }
 
