@@ -202,12 +202,8 @@ CREATE TABLE IF NOT EXISTS __migrations (
 );
 `;
 
-let initialized = false;
 
 async function bootstrap(env: Env) {
-  if (initialized) return; // ✅ 跳过重复执行
-  initialized = true;
-
   const db = env.DB;
   const seeded = await db.prepare('SELECT value FROM __migrations WHERE key = ?').bind('seeded_v1').first<{ value: string }>();
   if (seeded) return;
