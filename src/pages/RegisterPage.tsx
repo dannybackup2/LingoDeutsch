@@ -57,6 +57,11 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 409 && data.error === 'User already exists') {
+          setError('');
+          setStep('resend-verify');
+          return;
+        }
         setError(data.error || 'Registration failed');
         return;
       }
