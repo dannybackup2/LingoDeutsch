@@ -124,38 +124,78 @@ const Navbar: React.FC = () => {
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="md:hidden mt-3 space-y-2 px-4 pb-3 pt-2">
-          <Link 
-            to="/lessons" 
-            className="block py-2 px-3 text-base font-medium rounded-md hover:bg-gray-100 
+          <Link
+            to="/lessons"
+            className="block py-2 px-3 text-base font-medium rounded-md hover:bg-gray-100
                       dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100"
             onClick={() => setIsMenuOpen(false)}
           >
             Lessons
           </Link>
-          <Link 
-            to="/flashcards" 
-            className="block py-2 px-3 text-base font-medium rounded-md hover:bg-gray-100 
+          <Link
+            to="/flashcards"
+            className="block py-2 px-3 text-base font-medium rounded-md hover:bg-gray-100
                       dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100"
             onClick={() => setIsMenuOpen(false)}
           >
             Flashcards
           </Link>
-          <Link 
-            to="/quizzes" 
-            className="block py-2 px-3 text-base font-medium rounded-md hover:bg-gray-100 
+          <Link
+            to="/quizzes"
+            className="block py-2 px-3 text-base font-medium rounded-md hover:bg-gray-100
                       dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100"
             onClick={() => setIsMenuOpen(false)}
           >
             Quizzes
           </Link>
-          <Link 
-            to="/daily-word" 
-            className="block py-2 px-3 text-base font-medium rounded-md hover:bg-gray-100 
+          <Link
+            to="/daily-word"
+            className="block py-2 px-3 text-base font-medium rounded-md hover:bg-gray-100
                       dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100"
             onClick={() => setIsMenuOpen(false)}
           >
             Daily Word
           </Link>
+
+          {isAuthenticated && user ? (
+            <>
+              <div className="border-t dark:border-gray-700 pt-2 mt-2">
+                <div className="px-3 py-2">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Logged in as</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{user.email}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full text-left py-2 px-3 text-base font-medium rounded-md hover:bg-gray-100
+                            dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100 flex items-center space-x-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="border-t dark:border-gray-700 pt-2 mt-2 space-y-2">
+              <Link
+                to="/login"
+                className="block py-2 px-3 text-base font-medium rounded-md hover:bg-gray-100
+                          dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="block py-2 px-3 text-base font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </nav>
