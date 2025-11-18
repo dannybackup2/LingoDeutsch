@@ -36,21 +36,6 @@ async function verifyPassword(password: string, hash: string): Promise<boolean> 
   return passwordHash === hash;
 }
 
-function createJWT(payload: Record<string, any>, secret: string): string {
-  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const body = btoa(JSON.stringify({ ...payload, iat: Math.floor(Date.now() / 1000) }));
-  const message = `${header}.${body}`;
-
-  const encoder = new TextEncoder();
-  const data = encoder.encode(message + secret);
-
-  // For simplicity, we'll use a basic signature
-  // In production, you should use a proper JWT library
-  const signature = btoa(message);
-
-  return `${message}.${signature}`;
-}
-
 async function sendEmail(
   to: string,
   subject: string,
