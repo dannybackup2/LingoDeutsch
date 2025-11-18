@@ -63,21 +63,70 @@ async function sendEmail(
   env: Env
 ): Promise<boolean> {
   try {
-    // For now, we'll just log it. In production, integrate with SendGrid, Mailgun, or SMTP service
-    // You can configure environment variables: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM
-    console.log(`Email to ${to}: ${subject}`);
+    // Try SendGrid first
+    if (env.SENDGRID_API_KEY) {
+      const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.SENDGRID_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: to }] }],
+          from: { email: env.SMTP_FROM || 'noreply@lingodeutsch.com' },
+          subject,
+          content: [{ type: 'text/html', value: html }],
+        }),
+      });
+      return response.ok;
+    }
 
-    // Placeholder for future SMTP integration
-    // You can use Resend, SendGrid, or other email services via API
-    // Example using SendGrid:
-    // const sendgridApiKey = env.SENDGRID_API_KEY;
-    // if (!sendgridApiKey) return false;
-    // await fetch('https://api.sendgrid.com/v3/mail/send', { ... })
+    // Try Mailgun
+    if (env.MAILGUN_API_KEY && env.MAILGUN_DOMAIN) {
+      const formData = new FormData();
+      formData.append('from', env.SMTP_FROM || `LingoDeutsch <mailgun@${env.MAILGUN_DOMAIN}>`);
+      formData.append('to', to);
+      formData.append('subject', subject);
+      formData.append('html', html);
 
-    return true;
+      const response = await fetch(
+        `https://api.mailgun.net/v3/${env.MAILGUN_DOMAIN}/messages`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${btoa(`api:${env.MAILGUN_API_KEY}`)}`,
+          },
+          body: formData,
+        }
+      );
+      return response.ok;
+    }
+
+    // Try Resend
+    if (env.RESEND_API_KEY) {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: env.SMTP_FROM || 'LingoDeutsch <onboarding@resend.dev>',
+          to,
+          subject,
+          html,
+        }),
+      });
+      return response.ok;
+    }
+
+    // Fallback: console log if no email service configured
+    console.log(`Email not sent - no email service configured. Would send to ${to}: ${subject}`);
+    console.log('Configure one of: SENDGRID_API_KEY, MAILGUN_API_KEY, or RESEND_API_KEY');
+    return true; // Return true to not block registration
   } catch (error) {
     console.error('Email send error:', error);
-    return false;
+    return true; // Don't fail registration if email fails
   }
 }
 
