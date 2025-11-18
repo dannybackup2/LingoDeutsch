@@ -5,11 +5,11 @@ import { getApiBase } from '../services/config';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<'register' | 'verify'>('register');
+  const [step, setStep] = useState<'register' | 'verify' | 'resend-verify'>('register');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [userId, setUserId] = useState('');
-  
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
