@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, RefreshCw } from 'lucide-react';
 import FlashcardComponent from '../components/FlashcardComponent';
 import { useProgress } from '../context/ProgressContext';
+import { useAuth } from '../context/AuthContext';
 import { FlashcardDeck } from '../types';
 import { getFlashcardDeckById } from '../services/data';
 import confetti from 'canvas-confetti';
