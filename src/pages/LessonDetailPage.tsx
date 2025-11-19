@@ -31,10 +31,8 @@ const LessonDetailPage: React.FC = () => {
     if (lesson) {
       try {
         await updateLastLesson(lesson.id);
-        alert('Progress saved! You can continue from here next time.');
       } catch (error) {
         console.error('Failed to save progress:', error);
-        alert('Failed to save progress. Please try again.');
       }
     }
   };
