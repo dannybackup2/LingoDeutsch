@@ -5,8 +5,10 @@ import { getApiBase } from '../services/config';
 interface ProgressContextType {
   lastLessonId: string | null;
   lastFlashcardId: string | null;
+  lastFlashcardDeckId: string | null;
+  lastFlashcardIndex: number | null;
   updateLastLesson: (lessonId: string) => Promise<void>;
-  updateLastFlashcard: (flashcardId: string) => Promise<void>;
+  updateLastFlashcard: (flashcardId: string, deckId: string, cardIndex: number) => Promise<void>;
   isLoading: boolean;
 }
 
