@@ -3,11 +3,10 @@ import { useAuth } from './AuthContext';
 import { getApiBase } from '../services/config';
 
 interface ProgressContextType {
-  completedLessons: string[];
-  masteredFlashcards: string[];
-  markLessonComplete: (lessonId: string) => Promise<void>;
-  markFlashcardMastered: (cardId: string) => Promise<void>;
-  resetProgress: () => void;
+  lastLessonId: string | null;
+  lastFlashcardId: string | null;
+  updateLastLesson: (lessonId: string) => Promise<void>;
+  updateLastFlashcard: (flashcardId: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -15,8 +14,8 @@ const ProgressContext = createContext<ProgressContextType | undefined>(undefined
 
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
-  const [masteredFlashcards, setMasteredFlashcards] = useState<string[]>([]);
+  const [lastLessonId, setLastLessonId] = useState<string | null>(null);
+  const [lastFlashcardId, setLastFlashcardId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const progressLoadedRef = useRef<string | null>(null);
 
@@ -24,8 +23,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const loadProgress = async () => {
       if (!user?.id) {
-        setCompletedLessons([]);
-        setMasteredFlashcards([]);
+        setLastLessonId(null);
+        setLastFlashcardId(null);
         progressLoadedRef.current = null;
         return;
       }
@@ -41,19 +40,18 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const response = await fetch(`${apiBase}/progress/${encodeURIComponent(user.id)}`);
         if (response.ok) {
           const data = await response.json();
-          setCompletedLessons(data.completedLessons || []);
-          setMasteredFlashcards(data.masteredFlashcards || []);
+          setLastLessonId(data.lastLessonId || null);
+          setLastFlashcardId(data.lastFlashcardId || null);
           progressLoadedRef.current = user.id;
         } else {
-          // Initialize as empty if API fails
-          setCompletedLessons([]);
-          setMasteredFlashcards([]);
+          setLastLessonId(null);
+          setLastFlashcardId(null);
           progressLoadedRef.current = user.id;
         }
       } catch (error) {
         console.error('Failed to load progress:', error);
-        setCompletedLessons([]);
-        setMasteredFlashcards([]);
+        setLastLessonId(null);
+        setLastFlashcardId(null);
         progressLoadedRef.current = user.id;
       } finally {
         setIsLoading(false);
@@ -63,20 +61,17 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     loadProgress();
   }, [user?.id]);
 
-  const markLessonComplete = useCallback(async (lessonId: string) => {
+  const updateLastLesson = useCallback(async (lessonId: string) => {
     if (!user?.id) {
-      throw new Error('User must be logged in to mark lesson complete');
+      throw new Error('User must be logged in to save progress');
     }
 
     // Optimistic update
-    setCompletedLessons(prev => {
-      if (prev.includes(lessonId)) return prev;
-      return [...prev, lessonId];
-    });
+    setLastLessonId(lessonId);
 
     try {
       const apiBase = getApiBase();
-      const response = await fetch(`${apiBase}/progress/lesson-complete`, {
+      const response = await fetch(`${apiBase}/progress/update-last-learning`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.id, lessonId }),
@@ -87,28 +82,25 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     } catch (error) {
       // Revert optimistic update on failure
-      setCompletedLessons(prev => prev.filter(id => id !== lessonId));
+      setLastLessonId(null);
       throw error;
     }
   }, [user?.id]);
 
-  const markFlashcardMastered = useCallback(async (cardId: string) => {
+  const updateLastFlashcard = useCallback(async (flashcardId: string) => {
     if (!user?.id) {
-      throw new Error('User must be logged in to mark flashcard mastered');
+      throw new Error('User must be logged in to save progress');
     }
 
     // Optimistic update
-    setMasteredFlashcards(prev => {
-      if (prev.includes(cardId)) return prev;
-      return [...prev, cardId];
-    });
+    setLastFlashcardId(flashcardId);
 
     try {
       const apiBase = getApiBase();
-      const response = await fetch(`${apiBase}/progress/flashcard-master`, {
+      const response = await fetch(`${apiBase}/progress/update-last-learning`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, flashcardId: cardId }),
+        body: JSON.stringify({ userId: user.id, flashcardId }),
       });
 
       if (!response.ok) {
@@ -116,25 +108,18 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     } catch (error) {
       // Revert optimistic update on failure
-      setMasteredFlashcards(prev => prev.filter(id => id !== cardId));
+      setLastFlashcardId(null);
       throw error;
     }
   }, [user?.id]);
 
-  const resetProgress = () => {
-    setCompletedLessons([]);
-    setMasteredFlashcards([]);
-    progressLoadedRef.current = null;
-  };
-
   return (
     <ProgressContext.Provider
       value={{
-        completedLessons,
-        masteredFlashcards,
-        markLessonComplete,
-        markFlashcardMastered,
-        resetProgress,
+        lastLessonId,
+        lastFlashcardId,
+        updateLastLesson,
+        updateLastFlashcard,
         isLoading,
       }}
     >
