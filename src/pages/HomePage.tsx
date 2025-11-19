@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, MessageSquare, Brain, CalendarCheck } from 'lucide-react';
+import { BookOpen, MessageSquare, Brain, CalendarCheck, ArrowRight } from 'lucide-react';
 import DailyWordCard from '../components/DailyWordCard';
 import { DailyWord } from '../types';
 import { getDailyWord as fetchDailyWord } from '../services/data';
+import { useAuth } from '../context/AuthContext';
+import { useProgress } from '../context/ProgressContext';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
