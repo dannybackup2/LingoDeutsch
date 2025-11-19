@@ -7,7 +7,7 @@
       {"id": "card-1", "german": "angeln", "english": "钓鱼", "example": "Am Wochenende gehe ich gern am See angeln.", "mastered": false},
       {"id": "card-2", "german": "segeln", "english": "帆船运动，航行", "example": "Im Sommer segeln wir oft auf dem Bodensee.", "mastered": false},
       {"id": "card-3", "german": "surfen", "english": "冲浪", "example": "Er möchte in Spanien surfen lernen.", "mastered": false},
-      {"id":="card-4", "german": "der Schlitten", "english": "雪橇", "example": "Die Kinder fahren mit dem Schlitten den Berg hinunter.", "mastered": false},
+      {"id": "card-4", "german": "der Schlitten", "english": "雪橇", "example": "Die Kinder fahren mit dem Schlitten den Berg hinunter.", "mastered": false},
       {"id": "card-5", "german": "ski fahren", "english": "滑雪", "example": "Wir fahren jedes Jahr in Österreich Ski.", "mastered": false},
       {"id": "card-6", "german": "reiten", "english": "骑马", "example": "Sie reitet seit ihrem zehnten Lebensjahr.", "mastered": false},
       {"id": "card-7", "german": "schreien", "english": "喊叫", "example": "Das Baby schreit die ganze Nacht.", "mastered": false},
