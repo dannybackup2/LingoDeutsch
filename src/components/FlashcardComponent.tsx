@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Flashcard } from '../types';
-import { Volume as VolumeUp, CheckCircle } from 'lucide-react';
-import { useProgress } from '../context/ProgressContext';
+import { Volume as VolumeUp } from 'lucide-react';
 
 interface FlashcardProps {
   card: Flashcard;
-  onMastered: (cardId: string) => void;
+  onViewed: (cardId: string) => void;
 }
 
-const FlashcardComponent: React.FC<FlashcardProps> = ({ card, onMastered }) => {
+const FlashcardComponent: React.FC<FlashcardProps> = ({ card, onViewed }) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const { masteredFlashcards } = useProgress();
-  const isMastered = masteredFlashcards.includes(card.id);
+
+  // Notify parent when card is viewed
+  useEffect(() => {
+    onViewed(card.id);
+  }, [card.id, onViewed]);
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -23,11 +25,6 @@ const FlashcardComponent: React.FC<FlashcardProps> = ({ card, onMastered }) => {
       utterance.lang = 'de-DE';
       window.speechSynthesis.speak(utterance);
     }
-  };
-
-  const handleMarkMastered = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent flipping the card
-    onMastered(card.id);
   };
 
   return (
