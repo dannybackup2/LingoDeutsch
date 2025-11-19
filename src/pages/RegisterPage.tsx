@@ -94,28 +94,14 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const apiBase = getApiBase();
-      const response = await fetch(`${apiBase}/auth/resend-verification-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Failed to resend verification email');
-        return;
-      }
-
-      if (data.userId) {
-        setUserId(data.userId);
+      const result = await register(formData.username || formData.email, formData.email, formData.password || '');
+      if (result.userId) {
+        setUserId(result.userId);
         setStep('verify');
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
