@@ -18,6 +18,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { user } = useAuth();
   const [lastLessonId, setLastLessonId] = useState<string | null>(null);
   const [lastFlashcardId, setLastFlashcardId] = useState<string | null>(null);
+  const [lastFlashcardDeckId, setLastFlashcardDeckId] = useState<string | null>(null);
+  const [lastFlashcardIndex, setLastFlashcardIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const progressLoadedRef = useRef<string | null>(null);
 
