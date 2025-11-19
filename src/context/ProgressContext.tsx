@@ -29,6 +29,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (!user?.id) {
         setLastLessonId(null);
         setLastFlashcardId(null);
+        setLastFlashcardDeckId(null);
+        setLastFlashcardIndex(null);
         progressLoadedRef.current = null;
         return;
       }
@@ -46,16 +48,36 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const data = await response.json();
           setLastLessonId(data.lastLessonId || null);
           setLastFlashcardId(data.lastFlashcardId || null);
+
+          // Load flashcard deck and index from localStorage
+          const deckData = localStorage.getItem('lastFlashcardDeckData');
+          if (deckData) {
+            try {
+              const { deckId, cardIndex } = JSON.parse(deckData);
+              setLastFlashcardDeckId(deckId || null);
+              setLastFlashcardIndex(cardIndex ?? null);
+            } catch (err) {
+              setLastFlashcardDeckId(null);
+              setLastFlashcardIndex(null);
+            }
+          } else {
+            setLastFlashcardDeckId(null);
+            setLastFlashcardIndex(null);
+          }
           progressLoadedRef.current = user.id;
         } else {
           setLastLessonId(null);
           setLastFlashcardId(null);
+          setLastFlashcardDeckId(null);
+          setLastFlashcardIndex(null);
           progressLoadedRef.current = user.id;
         }
       } catch (error) {
         console.error('Failed to load progress:', error);
         setLastLessonId(null);
         setLastFlashcardId(null);
+        setLastFlashcardDeckId(null);
+        setLastFlashcardIndex(null);
         progressLoadedRef.current = user.id;
       } finally {
         setIsLoading(false);
@@ -91,13 +113,18 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [user?.id]);
 
-  const updateLastFlashcard = useCallback(async (flashcardId: string) => {
+  const updateLastFlashcard = useCallback(async (flashcardId: string, deckId: string, cardIndex: number) => {
     if (!user?.id) {
       throw new Error('User must be logged in to save progress');
     }
 
     // Optimistic update
     setLastFlashcardId(flashcardId);
+    setLastFlashcardDeckId(deckId);
+    setLastFlashcardIndex(cardIndex);
+
+    // Store deck info in localStorage for persistence
+    localStorage.setItem('lastFlashcardDeckData', JSON.stringify({ deckId, cardIndex }));
 
     try {
       const apiBase = getApiBase();
@@ -113,6 +140,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (error) {
       // Revert optimistic update on failure
       setLastFlashcardId(null);
+      setLastFlashcardDeckId(null);
+      setLastFlashcardIndex(null);
+      localStorage.removeItem('lastFlashcardDeckData');
       throw error;
     }
   }, [user?.id]);
@@ -122,6 +152,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       value={{
         lastLessonId,
         lastFlashcardId,
+        lastFlashcardDeckId,
+        lastFlashcardIndex,
         updateLastLesson,
         updateLastFlashcard,
         isLoading,
