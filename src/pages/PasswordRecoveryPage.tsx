@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function PasswordRecoveryPage() {
   const navigate = useNavigate();
+  const { forgotPassword, resetPassword } = useAuth();
   const [step, setStep] = useState<'request' | 'reset' | 'success'>('request');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
