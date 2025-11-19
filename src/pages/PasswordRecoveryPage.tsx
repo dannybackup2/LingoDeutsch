@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
-import { getApiBase } from '../services/config';
+import { useAuth } from '../context/AuthContext';
 
 export default function PasswordRecoveryPage() {
   const navigate = useNavigate();
+  const { forgotPassword, resetPassword } = useAuth();
   const [step, setStep] = useState<'request' | 'reset' | 'success'>('request');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -31,23 +32,11 @@ export default function PasswordRecoveryPage() {
 
     setLoading(true);
     try {
-      const apiBase = getApiBase();
-      const response = await fetch(`${apiBase}/auth/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Request failed');
-        return;
-      }
-
+      await forgotPassword(email);
       setStep('reset');
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -74,28 +63,12 @@ export default function PasswordRecoveryPage() {
 
     setLoading(true);
     try {
-      const apiBase = getApiBase();
-      const response = await fetch(`${apiBase}/auth/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          code: formData.code,
-          newPassword: formData.newPassword,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Reset failed');
-        return;
-      }
-
+      await resetPassword(email, formData.code, formData.newPassword);
       setStep('success');
       setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

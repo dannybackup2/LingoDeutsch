@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
-import { getApiBase } from '../services/config';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -27,34 +28,15 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const apiBase = getApiBase();
-      const response = await fetch(`${apiBase}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 403 && data.requiresVerification) {
-          // Email not verified
-          setError('Please verify your email first');
-          return;
-        }
-        setError(data.error || 'Login failed');
-        return;
-      }
-
-      // Store user info
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('authenticated', 'true');
+      await login(formData.email, formData.password);
       navigate('/');
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      if (errorMessage.includes('verify')) {
+        setError('Please verify your email first');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
