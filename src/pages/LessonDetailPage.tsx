@@ -11,22 +11,15 @@ const LessonDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { completedLessons, markLessonComplete } = useProgress();
+  const { updateLastLesson } = useProgress();
   const [lesson, setLesson] = useState<Lesson | undefined>(undefined);
   const [allLessons, setAllLessons] = useState<Lesson[]>([]);
-  const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
     if (!id) return;
     getLessonById(id).then(setLesson);
     listLessons().then(setAllLessons);
   }, [id]);
-
-  useEffect(() => {
-    if (lesson) {
-      setIsCompleted(completedLessons.includes(lesson.id));
-    }
-  }, [completedLessons, lesson]);
 
   const handleMarkComplete = async () => {
     if (!isAuthenticated) {
@@ -37,10 +30,10 @@ const LessonDetailPage: React.FC = () => {
 
     if (lesson) {
       try {
-        await markLessonComplete(lesson.id);
-        setIsCompleted(true);
+        await updateLastLesson(lesson.id);
+        alert('Progress saved! You can continue from here next time.');
       } catch (error) {
-        console.error('Failed to mark lesson complete:', error);
+        console.error('Failed to save progress:', error);
         alert('Failed to save progress. Please try again.');
       }
     }
