@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.error || 'Registration failed');
       }
 
-      return { userId: data.userId };
+      return { userId: data.userId || '' };
     } catch (error) {
       throw error;
     }
@@ -109,9 +109,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.error || 'Verification failed');
       }
 
-      setUser(data.user);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('authenticated', 'true');
+      if (data.user) {
+        setUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('authenticated', 'true');
+      }
     } catch (error) {
       throw error;
     }
@@ -129,7 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Request failed');
+        throw new Error(data.error || 'Password reset request failed');
       }
     } catch (error) {
       throw error;
@@ -148,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Reset failed');
+        throw new Error(data.error || 'Password reset failed');
       }
     } catch (error) {
       throw error;
