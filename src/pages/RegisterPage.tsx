@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, User, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { getApiBase } from '../services/config';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { register, verifyEmail } = useAuth();
   const [step, setStep] = useState<'register' | 'verify' | 'resend-verify'>('register');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -43,35 +45,19 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const apiBase = getApiBase();
-      const response = await fetch(`${apiBase}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 409 && data.error === 'User already exists') {
-          setError('');
-          setStep('resend-verify');
-          return;
-        }
-        setError(data.error || 'Registration failed');
-        return;
-      }
-
-      if (data.userId) {
-        setUserId(data.userId);
+      const result = await register(formData.username, formData.email, formData.password);
+      if (result.userId) {
+        setUserId(result.userId);
         setStep('verify');
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      if (errorMessage.includes('already exists')) {
+        setError('');
+        setStep('resend-verify');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -88,28 +74,11 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const apiBase = getApiBase();
-      const response = await fetch(`${apiBase}/auth/verify-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          code: formData.verificationCode,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Verification failed');
-        return;
-      }
-
-      // Store user info
-      localStorage.setItem('user', JSON.stringify(data.user));
+      await verifyEmail(userId, formData.verificationCode);
       navigate('/');
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
