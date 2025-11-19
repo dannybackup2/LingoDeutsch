@@ -103,7 +103,7 @@ const FlashcardDeckPage: React.FC = () => {
                 </span>
               </div>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Card {currentIndex + 1} of {deck.cards.length} • {masteredCount} mastered
+                Card {currentIndex + 1} of {deck.cards.length}
               </p>
             </div>
             
