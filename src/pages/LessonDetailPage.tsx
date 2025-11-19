@@ -4,6 +4,7 @@ import { Lesson } from '../types';
 import { getLessonById, listLessons } from '../services/data';
 import { ArrowLeft, BookOpen, Check, Volume as VolumeUp } from 'lucide-react';
 import { useProgress } from '../context/ProgressContext';
+import { useAuth } from '../context/AuthContext';
 import ReactMarkdown from 'react-markdown';
 
 const LessonDetailPage: React.FC = () => {
