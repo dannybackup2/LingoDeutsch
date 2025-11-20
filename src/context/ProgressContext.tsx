@@ -117,18 +117,16 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [user?.id]);
 
-  const updateLastFlashcard = useCallback(async (flashcardId: string, deckId: string, cardIndex: number) => {
+  const updateLastFlashcard = useCallback(async (cardId: string, deckId: string, cardIndex: number) => {
     if (!user?.id) {
       throw new Error('User must be logged in to save progress');
     }
 
+    // Create flashcardId in format "deckId-cardId"
+    const flashcardId = `${deckId}-${cardId}`;
+
     // Optimistic update
     setLastFlashcardId(flashcardId);
-    setLastFlashcardDeckId(deckId);
-    setLastFlashcardIndex(cardIndex);
-
-    // Store deck info in localStorage for persistence
-    localStorage.setItem('lastFlashcardDeckData', JSON.stringify({ deckId, cardIndex }));
 
     try {
       const apiBase = getApiBase();
@@ -144,9 +142,6 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (error) {
       // Revert optimistic update on failure
       setLastFlashcardId(null);
-      setLastFlashcardDeckId(null);
-      setLastFlashcardIndex(null);
-      localStorage.removeItem('lastFlashcardDeckData');
       throw error;
     }
   }, [user?.id]);
