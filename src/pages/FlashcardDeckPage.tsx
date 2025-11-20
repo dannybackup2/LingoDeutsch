@@ -38,17 +38,14 @@ const FlashcardDeckPage: React.FC = () => {
 
   // Separately handle resuming from last position on initial mount
   useEffect(() => {
-    if (!deck || !lastFlashcardId || lastFlashcardDeckId !== id) return;
+    if (!deck || !lastFlashcardId) return;
 
-    const parsed = parseFlashcardId(lastFlashcardId);
-    if (parsed && parsed.deckId === id) {
-      // Find the card with matching ID
-      const cardIndex = deck.cards.findIndex(card => card.id === parsed.cardId);
-      if (cardIndex !== -1) {
-        setCurrentIndex(cardIndex);
-      }
+    // Find the card with matching ID directly (lastFlashcardId is the card ID, e.g., "1-0022")
+    const cardIndex = deck.cards.findIndex(card => card.id === lastFlashcardId);
+    if (cardIndex !== -1) {
+      setCurrentIndex(cardIndex);
     }
-  }, [deck, id]);
+  }, [deck]);
   
   if (!deck) {
     return (
