@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { getApiBase } from '../services/config';
 
@@ -8,20 +8,46 @@ interface ProgressContextType {
   lastFlashcardDeckId: string | null;
   lastFlashcardIndex: number | null;
   updateLastLesson: (lessonId: string) => Promise<void>;
-  updateLastFlashcard: (flashcardId: string, deckId: string, cardIndex: number) => Promise<void>;
+  updateLastFlashcard: (cardId: string, deckId: string, cardIndex: number) => Promise<void>;
   isLoading: boolean;
 }
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
 
+// Helper function to parse flashcardId format "deckId-cardId"
+// Example: "1-0001" -> { deckId: "1", cardId: "0001" }
+function parseFlashcardId(flashcardId: string) {
+  const parts = flashcardId.split('-');
+  if (parts.length === 2) {
+    return { deckId: parts[0], cardId: parts[1] };
+  }
+  return null;
+}
+
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const [lastLessonId, setLastLessonId] = useState<string | null>(null);
   const [lastFlashcardId, setLastFlashcardId] = useState<string | null>(null);
-  const [lastFlashcardDeckId, setLastFlashcardDeckId] = useState<string | null>(null);
-  const [lastFlashcardIndex, setLastFlashcardIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const progressLoadedRef = useRef<string | null>(null);
+
+  // Parse lastFlashcardId to extract deckId and cardIndex
+  // This is computed from the flashcardId format "deckId-cardId"
+  const { lastFlashcardDeckId, lastFlashcardIndex } = useMemo(() => {
+    if (!lastFlashcardId) {
+      return { lastFlashcardDeckId: null, lastFlashcardIndex: null };
+    }
+
+    const parsed = parseFlashcardId(lastFlashcardId);
+    if (!parsed) {
+      return { lastFlashcardDeckId: null, lastFlashcardIndex: null };
+    }
+
+    // For backward compatibility: if lastFlashcardId is in format "deckId-cardId"
+    // we treat it as if the user was at that card, but we don't know the exact index
+    // The actual cardIndex will need to be derived from the cards array in FlashcardDeckPage
+    return { lastFlashcardDeckId: parsed.deckId, lastFlashcardIndex: 0 };
+  }, [lastFlashcardId]);
 
   // Load progress from backend when user changes
   useEffect(() => {
