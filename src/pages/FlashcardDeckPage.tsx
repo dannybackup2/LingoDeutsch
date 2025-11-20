@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, RefreshCw } from 'lucide-react';
 import FlashcardComponent from '../components/FlashcardComponent';
 import { useProgress } from '../context/ProgressContext';
@@ -10,27 +10,45 @@ import { getFlashcardDeckById } from '../services/data';
 const FlashcardDeckPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
-  const { updateLastFlashcard } = useProgress();
+  const { updateLastFlashcard, lastFlashcardId, lastFlashcardDeckId } = useProgress();
 
   const [deck, setDeck] = useState<FlashcardDeck | undefined>(undefined);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Helper function to parse flashcardId format "deckId-cardId"
+  const parseFlashcardId = (flashcardId: string) => {
+    const parts = flashcardId.split('-');
+    if (parts.length === 2) {
+      return { deckId: parts[0], cardId: parts[1] };
+    }
+    return null;
+  };
 
   useEffect(() => {
     if (!id) return;
     getFlashcardDeckById(id).then(d => {
       setDeck(d);
-      // Read cardIndex from query params if available
-      const cardIndex = searchParams.get('cardIndex');
-      if (cardIndex !== null) {
-        const index = Math.max(0, Math.min(parseInt(cardIndex, 10), (d?.cards.length || 1) - 1));
-        setCurrentIndex(isNaN(index) ? 0 : index);
+
+      // If user has progress in this deck, resume from last card
+      if (lastFlashcardId && lastFlashcardDeckId === id) {
+        const parsed = parseFlashcardId(lastFlashcardId);
+        if (parsed) {
+          // Find the card with matching ID
+          const cardIndex = d?.cards.findIndex(card => card.id === parsed.cardId) ?? -1;
+          if (cardIndex !== -1) {
+            setCurrentIndex(cardIndex);
+          } else {
+            setCurrentIndex(0);
+          }
+        } else {
+          setCurrentIndex(0);
+        }
       } else {
         setCurrentIndex(0);
       }
     });
-  }, [id, searchParams]);
+  }, [id, lastFlashcardId, lastFlashcardDeckId]);
   
   if (!deck) {
     return (
