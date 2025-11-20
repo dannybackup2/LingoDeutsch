@@ -87,8 +87,8 @@ const HomePage: React.FC = () => {
             </button>
             <button
               onClick={() => {
-                if (isAuthenticated && lastFlashcardDeckId) {
-                  navigate(`/flashcards/${lastFlashcardDeckId}`);
+                if (isAuthenticated && lastDeckId) {
+                  navigate(`/flashcards/${lastDeckId}`);
                 } else {
                   navigate('/flashcards');
                 }
